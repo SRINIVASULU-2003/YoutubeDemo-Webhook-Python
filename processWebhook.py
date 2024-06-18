@@ -18,12 +18,12 @@ def home():
 def webhook():
     req = request.get_json(force=True)
     print(req)
-
     return {
         'fulfillmentText': 'Hello from the other side.'
     }
 
-if __name__ == "__main__":
-    app.secret_key = 'ItIsASecret'
-    app.debug = True
-    app.run()
+# Ensure the secret key is set
+app.secret_key = 'ItIsASecret'
+app.debug = True
+
+# No need to include the __main__ block for Render deployment
