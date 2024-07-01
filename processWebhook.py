@@ -9,7 +9,7 @@ def webhook():
 
     # Extract the session ID from the JSON data
     session_id = request_data.get('session')
-
+    print(session_id)
     # Now you can save the session_id or perform any other operation you need
     # For example, saving it to a database
     save_session_id(session_id)
