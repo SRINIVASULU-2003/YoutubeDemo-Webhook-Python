@@ -1,29 +1,30 @@
-import flask
-import os
-from flask import send_from_directory, request
+from flask import Flask, request, jsonify
 
-app = flask.Flask(__name__)
-
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/favicon.png')
-
-@app.route('/')
-@app.route('/home')
-def home():
-    return "Hello World"
+app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    req = request.get_json(force=True)
-    print(req)
-    return {
-        'fulfillmentText': 'Hello from the other side.'
+    # Get the JSON data from the request
+    request_data = request.get_json()
+
+    # Extract the session ID from the JSON data
+    session_id = request_data.get('session')
+
+    # Now you can save the session_id or perform any other operation you need
+    # For example, saving it to a database
+    save_session_id(session_id)
+
+    # Prepare a response for Dialogflow
+    response = {
+        "fulfillmentText": "Session ID has been saved successfully."
     }
 
-# Ensure the secret key is set
-app.secret_key = 'ItIsASecret'
-app.debug = True
+    return jsonify(response)
 
-# No need to include the __main__ block for Render deployment
+def save_session_id(session_id):
+    # Your code to save the session_id goes here
+    # For example, save it to a file, database, etc.
+    with open('sessions.txt', 'a') as file:
+        file.write(f"{session_id}\n")
+
+
