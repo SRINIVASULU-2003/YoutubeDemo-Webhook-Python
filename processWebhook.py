@@ -1,30 +1,38 @@
 from flask import Flask, request, jsonify
+from gradio_client import Client, handle_file
+import os
 
 app = Flask(__name__)
+if not os.path.exists("temp"):
+        os.makedirs("temp")
+# Initialize the Gradio client
+client = Client("sitammeur/PicQ")
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    # Get the JSON data from the request
-    request_data = request.get_json()
+@app.route('/predict', methods=['POST'])
+def predict():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file found in the request"}), 400
 
-    # Extract the session ID from the JSON data
-    session_id = request_data.get('session')
-    print(session_id)
-    # Now you can save the session_id or perform any other operation you need
-    # For example, saving it to a database
-    save_session_id(session_id)
+    # Get the image file from the request
+    image = request.files['image']
+    
+    # Save the file temporarily
+    temp_path = os.path.join("temp", image.filename)
+    image.save(temp_path)
 
-    # Prepare a response for Dialogflow
-    response = {
-        "fulfillmentText": "Session ID has been saved successfully."
-    }
+    try:
+        # Use the Gradio client to predict the result
+        result = client.predict(
+            image=handle_file(temp_path),
+            question="extract the complete data from the image",
+            api_name="/predict"
+        )
 
-    return jsonify(response)
-
-def save_session_id(session_id):
-    # Your code to save the session_id goes here
-    # For example, save it to a file, database, etc.
-    with open('sessions.txt', 'a') as file:
-        file.write(f"{session_id}\n")
-
+        # Return the result as JSON
+        return jsonify({"result": result})
+    
+    finally:
+        # Clean up the temporary file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
